@@ -30,9 +30,12 @@ namespace MFlight.Demo
         [Tooltip("Angle at which airplane banks fully into target.")] public float aggressiveTurnAngle = 10f;
 
         [Header("Input")]
-        [SerializeField] [Range(-1f, 1f)] private float pitch = 0f;
-        [SerializeField] [Range(-1f, 1f)] private float yaw = 0f;
-        [SerializeField] [Range(-1f, 1f)] private float roll = 0f;
+        [SerializeField][Range(-1f, 1f)] private float pitch = 0f;
+        [SerializeField][Range(-1f, 1f)] private float yaw = 0f;
+        [SerializeField][Range(-1f, 1f)] private float roll = 0f;
+
+        [Header("New Features")]
+        [SerializeField][Range(0f, 0.1f)] private float thrustModificator = 0.02f;
 
         public float Pitch { set { pitch = Mathf.Clamp(value, -1f, 1f); } get { return pitch; } }
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
@@ -42,6 +45,15 @@ namespace MFlight.Demo
 
         private bool rollOverride = false;
         private bool pitchOverride = false;
+
+        // Features added
+        private float thrustFactor = 0f;
+
+        // Lift variables
+        // https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/lifteq.html
+        private const float LiftCoefficient = 1f;
+        private const float WingArea = 1f;
+        private const float density = 1.204f;
 
         private void Awake()
         {
@@ -70,6 +82,9 @@ namespace MFlight.Demo
                 pitchOverride = true;
                 rollOverride = true;
             }
+
+            if (Input.mouseScrollDelta.y != 0)
+                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * thrustModificator, 0f, 10f);
 
             // Calculate the autopilot stick inputs.
             float autoYaw = 0f;
@@ -133,11 +148,17 @@ namespace MFlight.Demo
         {
             // Ultra simple flight where the plane just gets pushed forward and manipulated
             // with torques to turn.
-            rigid.AddRelativeForce(Vector3.forward * thrust * forceMult, ForceMode.Force);
+            rigid.AddRelativeForce(Vector3.forward * thrust * thrustFactor * forceMult, ForceMode.Force);
             rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch,
                                                 turnTorque.y * yaw,
                                                 -turnTorque.z * roll) * forceMult,
                                     ForceMode.Force);
+
+
+            // Add the lift
+            rigid.AddForce(Vector3.up * 0.5f * Mathf.Pow(rigid.velocity.magnitude, 2) * LiftCoefficient * density * WingArea);
+
+            Debug.Log(rigid.velocity);
         }
     }
 }
