@@ -35,7 +35,7 @@ namespace MFlight.Demo
         [SerializeField][Range(-1f, 1f)] private float roll = 0f;
 
         [Header("New Features")]
-        [SerializeField][Range(0f, 0.1f)] private float thrustModificator = 0.02f;
+        [SerializeField][Range(0, 100)] private float thrustModificator = 50;
 
         public float Pitch { set { pitch = Mathf.Clamp(value, -1f, 1f); } get { return pitch; } }
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
@@ -51,13 +51,15 @@ namespace MFlight.Demo
 
         // Lift variables
         // https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/lifteq.html
-        private const float LiftCoefficient = 1f;
-        private const float WingArea = 1f;
+        private const float LiftCoefficient = 0.0001f;
+        private const float WingArea = 10f;
         private const float density = 1.204f;
 
         private void Awake()
         {
             rigid = GetComponent<Rigidbody>();
+
+            rigid.maxAngularVelocity = 10000000;
 
             if (controller == null)
                 Debug.LogError(name + ": Plane - Missing reference to MouseFlightController!");
@@ -83,9 +85,6 @@ namespace MFlight.Demo
                 rollOverride = true;
             }
 
-            if (Input.mouseScrollDelta.y != 0)
-                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * thrustModificator, 0f, 10f);
-
             // Calculate the autopilot stick inputs.
             float autoYaw = 0f;
             float autoPitch = 0f;
@@ -97,6 +96,10 @@ namespace MFlight.Demo
             yaw = autoYaw;
             pitch = (pitchOverride) ? keyboardPitch : autoPitch;
             roll = (rollOverride) ? keyboardRoll : autoRoll;
+
+            // Scale the thrust according to an engine factor. Can be controlled via the scrollwheel.
+            if (Input.mouseScrollDelta.y != 0)
+                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * (thrustModificator/100), 0f, 200f);
         }
 
         private void RunAutopilot(Vector3 flyTarget, out float yaw, out float pitch, out float roll)
@@ -148,17 +151,25 @@ namespace MFlight.Demo
         {
             // Ultra simple flight where the plane just gets pushed forward and manipulated
             // with torques to turn.
-            rigid.AddRelativeForce(Vector3.forward * thrust * thrustFactor * forceMult, ForceMode.Force);
+            var forces = rigid.transform.forward * thrust * thrustFactor * forceMult;
+
+            // Adding the lift.
+            var lift = Mathf.Clamp(
+                0.5f * Mathf.Pow(rigid.velocity.z, 2) * LiftCoefficient * density * WingArea * forceMult,
+                0,
+                Physics.gravity.y * -1.50f * forceMult
+            );
+            forces += Vector3.up * lift;
+            Debug.Log(lift);
+            Debug.Log(forces);
+
+            // Applying the forces
+            rigid.AddRelativeForce(forces, ForceMode.Force);
             rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch,
                                                 turnTorque.y * yaw,
-                                                -turnTorque.z * roll) * forceMult,
+                                                -turnTorque.z * roll) * forceMult * (rigid.velocity.z/100),
                                     ForceMode.Force);
 
-
-            // Add the lift
-            rigid.AddForce(Vector3.up * 0.5f * Mathf.Pow(rigid.velocity.magnitude, 2) * LiftCoefficient * density * WingArea);
-
-            Debug.Log(rigid.velocity);
         }
     }
 }
