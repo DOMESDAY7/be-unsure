@@ -52,6 +52,9 @@ public class CloudMaster : MonoBehaviour {
     [Header (headerDecoration + "Sky" + headerDecoration)]
     public Color colA;
     public Color colB;
+    public GameObject Rain;
+    public bool ActiveRain = false;
+    public Color RainColor;
 
     // Internal
     [HideInInspector]
@@ -124,8 +127,19 @@ public class CloudMaster : MonoBehaviour {
         // Set debug params
         SetDebugParams ();
 
-        material.SetColor ("colA", colA);
-        material.SetColor ("colB", colB);
+        if(ActiveRain)
+        {
+            Rain.SetActive(true);
+            material.SetColor("colA", RainColor);
+            material.SetColor("colB", RainColor);
+        }
+        else
+        {
+            Rain.SetActive(false);
+            material.SetColor("colA", colA);
+            material.SetColor("colB", colB);
+        }
+
 
         // Bit does the following:
         // - sets _MainTex property on material to the source texture
