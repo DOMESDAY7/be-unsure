@@ -5,9 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+    public string scenename;
     public void PlayGame()
     {
-        SceneManager.LoadScene("Flight Demo");
+        SceneManager.LoadScene(scenename);
     }
 
 

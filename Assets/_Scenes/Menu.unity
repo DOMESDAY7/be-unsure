@@ -942,6 +942,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5108d1a83e84a74caa9757d36383c57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scenename: 
 --- !u!1 &601446227
 GameObject:
   m_ObjectHideFlags: 0
@@ -2152,6 +2153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5108d1a83e84a74caa9757d36383c57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scenename: FLight Demo
 --- !u!1 &1674160235
 GameObject:
   m_ObjectHideFlags: 0
