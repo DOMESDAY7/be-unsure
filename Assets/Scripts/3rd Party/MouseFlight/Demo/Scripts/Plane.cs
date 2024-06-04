@@ -3,7 +3,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 //
 
+using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MFlight.Demo
 {
@@ -35,7 +38,9 @@ namespace MFlight.Demo
         [SerializeField][Range(-1f, 1f)] private float roll = 0f;
 
         [Header("New Features")]
+        [SerializeField] private TMP_Text UI;
         [SerializeField][Range(0, 100)] private float thrustModificator = 50;
+        [SerializeField][Range(0, 100)] private float PilotingSensitivity = 50;
 
         public float Pitch { set { pitch = Mathf.Clamp(value, -1f, 1f); } get { return pitch; } }
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
@@ -157,19 +162,24 @@ namespace MFlight.Demo
             var lift = Mathf.Clamp(
                 0.5f * Mathf.Pow(rigid.velocity.z, 2) * LiftCoefficient * density * WingArea * forceMult,
                 0,
-                Physics.gravity.y * -1.50f * forceMult
+                Physics.gravity.y * -1.50f
             );
             forces += Vector3.up * lift;
-            Debug.Log(lift);
-            Debug.Log(forces);
 
             // Applying the forces
             rigid.AddRelativeForce(forces, ForceMode.Force);
-            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch,
-                                                turnTorque.y * yaw,
-                                                -turnTorque.z * roll) * forceMult * (rigid.velocity.z/100),
+            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch, turnTorque.y * yaw,-turnTorque.z * roll)
+                                        * forceMult * (PilotingSensitivity/10) * rigid.velocity.z,
                                     ForceMode.Force);
 
+            UI.text = $"--- Forces ---\n" +
+                      $"Thrust: {Math.Round(thrustFactor)}\n" +
+                      $"Lift: {Math.Round(lift)}\n" +
+                      $"Velocity: {Math.Round(rigid.velocity.magnitude)}\n" +
+                      $"\n--- Rotation ---\n" +
+                      $"Pitch: {Math.Round(Pitch, 3)}\n" +
+                      $"Yaw: {Math.Round(yaw, 3)}\n" +
+                      $"Roll: {Math.Round(roll, 3)}";
         }
     }
 }
