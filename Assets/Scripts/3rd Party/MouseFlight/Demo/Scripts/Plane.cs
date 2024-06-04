@@ -104,7 +104,7 @@ namespace MFlight.Demo
 
             // Scale the thrust according to an engine factor. Can be controlled via the scrollwheel.
             if (Input.mouseScrollDelta.y != 0)
-                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * (thrustModificator/100), 0f, 200f);
+                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * (thrustModificator/100), 0f, 100f);
         }
 
         private void RunAutopilot(Vector3 flyTarget, out float yaw, out float pitch, out float roll)
@@ -156,24 +156,24 @@ namespace MFlight.Demo
         {
             // Ultra simple flight where the plane just gets pushed forward and manipulated
             // with torques to turn.
-            var forces = rigid.transform.forward * thrust * thrustFactor * forceMult;
+            var thrustForce = rigid.transform.forward * thrust * thrustFactor * forceMult;
 
             // Adding the lift.
             var lift = Mathf.Clamp(
-                0.5f * Mathf.Pow(rigid.velocity.z, 2) * LiftCoefficient * density * WingArea * forceMult,
-                0,
-                Physics.gravity.y * -1.50f
+                0.5f * Mathf.Pow(rigid.velocity.z, 2) * LiftCoefficient * density * WingArea * forceMult * 0.0001f,
+                0, Physics.gravity.y * -1.50f
             );
-            forces += Vector3.up * lift;
-
+            
             // Applying the forces
-            rigid.AddRelativeForce(forces, ForceMode.Force);
-            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch, turnTorque.y * yaw,-turnTorque.z * roll)
-                                        * forceMult * (PilotingSensitivity/10) * rigid.velocity.z,
+            rigid.AddForce(thrustForce, ForceMode.Force);
+            rigid.AddForce(lift * rigid.transform.up);
+            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch, turnTorque.y * yaw, -turnTorque.z * roll)
+                                    * forceMult * PilotingSensitivity * Math.Clamp(rigid.velocity.z, 0, 1),
                                     ForceMode.Force);
 
             UI.text = $"--- Forces ---\n" +
-                      $"Thrust: {Math.Round(thrustFactor)}\n" +
+                      $"Thrust Factor: {Math.Round(thrustFactor)}\n" +
+                      $"Thrust Force: {Math.Round(thrustForce.x, 3)} {Math.Round(thrustForce.x, 3)} {Math.Round(thrustForce.x, 3)}\n" +
                       $"Lift: {Math.Round(lift)}\n" +
                       $"Velocity: {Math.Round(rigid.velocity.magnitude)}\n" +
                       $"\n--- Rotation ---\n" +
