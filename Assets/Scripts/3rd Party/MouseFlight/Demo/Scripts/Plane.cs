@@ -139,5 +139,14 @@ namespace MFlight.Demo
                                                 -turnTorque.z * roll) * forceMult,
                                     ForceMode.Force);
         }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            Debug.Log(rigid.velocity.magnitude);
+            if (rigid.velocity.magnitude > 10f)
+            {
+                Destroy(this.gameObject);
+            }
+        }
     }
 }
