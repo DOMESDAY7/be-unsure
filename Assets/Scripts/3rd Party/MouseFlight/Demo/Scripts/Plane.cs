@@ -39,8 +39,7 @@ namespace MFlight.Demo
 
         [Header("New Features")]
         [SerializeField] private TMP_Text UI;
-        [SerializeField][Range(0, 100)] private float thrustModificator = 50;
-        [SerializeField][Range(0, 100)] private float PilotingSensitivity = 50;
+        [SerializeField][Range(0, 30)] private float PilotingSensitivity = 5;
 
         public float Pitch { set { pitch = Mathf.Clamp(value, -1f, 1f); } get { return pitch; } }
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
@@ -51,14 +50,8 @@ namespace MFlight.Demo
         private bool rollOverride = false;
         private bool pitchOverride = false;
 
-        // Features added
-        private float thrustFactor = 0f;
-
-        // Lift variables
-        // https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/lifteq.html
-        private const float LiftCoefficient = 0.0001f;
-        private const float WingArea = 10f;
-        private const float density = 1.204f;
+        // --- Features added ---
+        private float thrustFactor = 0f;  // Factor to control the thrust of the plane via the scrollwheel.
 
         private void Awake()
         {
@@ -94,8 +87,8 @@ namespace MFlight.Demo
             float autoYaw = 0f;
             float autoPitch = 0f;
             float autoRoll = 0f;
-            if (controller != null)
-                RunAutopilot(controller.MouseAimPos, out autoYaw, out autoPitch, out autoRoll);
+            // if (controller != null)
+                // RunAutopilot(controller.MouseAimPos, out autoYaw, out autoPitch, out autoRoll);
 
             // Use either keyboard or autopilot input.
             yaw = autoYaw;
@@ -104,7 +97,7 @@ namespace MFlight.Demo
 
             // Scale the thrust according to an engine factor. Can be controlled via the scrollwheel.
             if (Input.mouseScrollDelta.y != 0)
-                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * (thrustModificator/100), 0f, 100f);
+                thrustFactor = Mathf.Clamp(thrustFactor + Input.mouseScrollDelta.y * 2, 0f, 100f);
         }
 
         private void RunAutopilot(Vector3 flyTarget, out float yaw, out float pitch, out float roll)
@@ -154,32 +147,47 @@ namespace MFlight.Demo
 
         private void FixedUpdate()
         {
+            var gravityForce = 9.80665f * rigid.mass; 
+
             // Ultra simple flight where the plane just gets pushed forward and manipulated
             // with torques to turn.
-            var thrustForce = rigid.transform.forward * thrust * thrustFactor * forceMult;
+            var thrustForce = Mathf.Lerp(thrust, thrust * thrustFactor * forceMult, Time.deltaTime);
 
             // Adding the lift.
-            var lift = Mathf.Clamp(
-                0.5f * Mathf.Pow(rigid.velocity.z, 2) * LiftCoefficient * density * WingArea * forceMult * 0.0001f,
-                0, Physics.gravity.y * -1.50f
-            );
-            
-            // Applying the forces
-            rigid.AddForce(thrustForce, ForceMode.Force);
-            rigid.AddForce(lift * rigid.transform.up);
-            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch, turnTorque.y * yaw, -turnTorque.z * roll)
-                                    * forceMult * PilotingSensitivity * Math.Clamp(rigid.velocity.z, 0, 1),
-                                    ForceMode.Force);
+            var liftForce = 0f;
 
+            if (Math.Abs(rigid.rotation.eulerAngles.x % 90f) > 15 || Math.Abs(rigid.rotation.eulerAngles.z % 90f) > 15)
+            {
+                liftForce = Mathf.Lerp(liftForce, Mathf.Clamp(
+                    (thrustForce / 100) * (gravityForce * 1.1f),
+                    0, gravityForce * 1.1f
+                ), Time.deltaTime);
+            }
+
+            // Applying the forces
+            rigid.AddForce(gravityForce * Vector3.down, ForceMode.Force);
+            rigid.AddRelativeForce(thrustForce * rigid.transform.forward + liftForce * rigid.transform.up);
+            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch, turnTorque.y * yaw, -turnTorque.z * roll)
+                                    * forceMult * Math.Clamp(99 - thrustFactor, 40, 99) / 1000f * PilotingSensitivity,
+                                    ForceMode.Force);
+            
             UI.text = $"--- Forces ---\n" +
-                      $"Thrust Factor: {Math.Round(thrustFactor)}\n" +
-                      $"Thrust Force: {Math.Round(thrustForce.x, 3)} {Math.Round(thrustForce.x, 3)} {Math.Round(thrustForce.x, 3)}\n" +
-                      $"Lift: {Math.Round(lift)}\n" +
-                      $"Velocity: {Math.Round(rigid.velocity.magnitude)}\n" +
+                      $"Thrust: {Math.Round(thrustForce, 3)}\n" +
+                      $"Gravity: {Math.Round(gravityForce, 3)}\n" +
+                      $"Lift: {Math.Round(liftForce, 3)}\n" +
+                      $"Velocity Magnitude: {Math.Round(rigid.velocity.magnitude, 3)}\n" +
                       $"\n--- Rotation ---\n" +
+                      $"Engine Power: {Math.Round(thrustFactor)}\n" +
                       $"Pitch: {Math.Round(Pitch, 3)}\n" +
                       $"Yaw: {Math.Round(yaw, 3)}\n" +
                       $"Roll: {Math.Round(roll, 3)}";
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (rigid.velocity.magnitude >= 100) { 
+                Destroy(this.gameObject); 
+            }
         }
     }
 }
