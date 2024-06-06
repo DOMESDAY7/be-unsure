@@ -75,8 +75,8 @@ namespace MFlight.Demo
             float autoYaw = 0f;
             float autoPitch = 0f;
             float autoRoll = 0f;
-            if (controller != null)
-                RunAutopilot(controller.MouseAimPos, out autoYaw, out autoPitch, out autoRoll);
+            // if (controller != null)
+                // RunAutopilot(controller.MouseAimPos, out autoYaw, out autoPitch, out autoRoll);
 
             // Use either keyboard or autopilot input.
             yaw = autoYaw;

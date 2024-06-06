@@ -44,6 +44,8 @@ namespace MFlight
         private Vector3 frozenDirection = Vector3.forward;
         private bool isMouseAimFrozen = false;
 
+        private bool FPV = false;
+
         /// <summary>
         /// Get a point along the aircraft's boresight projected out to aimDistance meters.
         /// Useful for drawing a crosshair to aim fixed forward guns with, or to indicate what
@@ -111,7 +113,7 @@ namespace MFlight
             if (useFixed == false)
                 UpdateCameraPos();
 
-            RotateRig();
+            // RotateRig();
         }
 
         private void FixedUpdate()
@@ -123,9 +125,23 @@ namespace MFlight
         void LateUpdate() {
             cam.position = cameraRig.position;
             cam.rotation = cameraRig.rotation;
-            cam.position += cam.forward * offset.z;
-            cam.position += cam.up * offset.y;
-            cam.position += cam.right * offset.x;
+
+            if (!FPV)
+            {
+                cam.position += cam.forward * offset.z;
+                cam.position += cam.up * offset.y;
+                cam.position += cam.right * offset.x;
+            }
+            else
+            {
+                cam.position += cam.forward * 1.5f;
+                cam.position += cam.up * 0.6f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                FPV = !FPV;
+            }
         }
 
         private void RotateRig()
@@ -151,8 +167,8 @@ namespace MFlight
 
             // Rotate the aim target that the plane is meant to fly towards.
             // Use the camera's axes in world space so that mouse motion is intuitive.
-            mouseAim.Rotate(cam.right, mouseY, Space.World);
-            mouseAim.Rotate(cam.up, mouseX, Space.World);
+            // mouseAim.Rotate(cam.right, mouseY, Space.World);
+            // mouseAim.Rotate(cam.up, mouseX, Space.World);
 
             // The up vector of the camera normally is aligned to the horizon. However, when
             // looking straight up/down this can feel a bit weird. At those extremes, the camera
@@ -178,8 +194,8 @@ namespace MFlight
         {
             if (aircraft != null)
             {
-                // Move the whole rig to follow the aircraft.
                 transform.position = aircraft.position;
+                transform.rotation = aircraft.transform.rotation;
             }
         }
 
