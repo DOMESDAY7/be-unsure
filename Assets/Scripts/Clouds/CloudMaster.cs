@@ -52,6 +52,10 @@ public class CloudMaster : MonoBehaviour {
     [Header (headerDecoration + "Sky" + headerDecoration)]
     public Color colA;
     public Color colB;
+    public Light directionalLight;
+    public Color skyBlue = new Color(0.529f, 0.808f, 0.922f); // Bleu ciel (RGB: 135, 206, 235)
+    public Color deepBlue = new Color(0.0f, 0.0f, 0.5f); // Bleu profond (RGB: 0, 0, 128)
+    public Color sunsetOrange = new Color(1.0f, 0.647f, 0.0f); // Orange coucher de soleil (RGB: 255, 165, 0)
 
     // Internal
     [HideInInspector]
@@ -124,8 +128,22 @@ public class CloudMaster : MonoBehaviour {
         // Set debug params
         SetDebugParams ();
 
-        material.SetColor ("colA", colA);
-        material.SetColor ("colB", colB);
+        // Obtenir la direction de la lumière directionnelle
+        Vector3 lightDirection = directionalLight.transform.forward;
+
+        // Normaliser la direction de la lumière
+        lightDirection.Normalize();
+        // Normaliser la direction de la lumière
+        lightDirection.Normalize();
+
+        // Utiliser la composante Y pour déterminer l'intensité de la couleur
+        float t = (1-lightDirection.y) / 2; // Mapper de [-1, 1] à [0, 1]
+
+        // Interpoler entre le bleu profond et le bleu ciel
+        Color newColor = Color.Lerp(deepBlue, skyBlue, t);
+
+        material.SetColor ("colA", newColor);
+        material.SetColor ("colB", newColor);
 
         // Bit does the following:
         // - sets _MainTex property on material to the source texture
