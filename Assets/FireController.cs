@@ -12,10 +12,6 @@ public class FireController : MonoBehaviour
         {
             Debug.LogError("No child named 'fire' found.");
         }
-        else
-        {
-            Debug.Log("Child named 'fire' found and assigned.");
-        }
     }
 
     private void OnTriggerEnter(Collider other)
