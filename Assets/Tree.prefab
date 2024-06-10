@@ -109,8 +109,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cecbff7836f827d40830c75680767169, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fireGameObject: {fileID: 8909595716660755493, guid: 31e048e04ef5d7044801f68600e8b972,
-    type: 3}
 --- !u!65 &4112876652360014908
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -208,6 +206,11 @@ PrefabInstance:
     - target: {fileID: 5263253690230531399, guid: 31e048e04ef5d7044801f68600e8b972,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8588628027756020531, guid: 31e048e04ef5d7044801f68600e8b972,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8909595716660755493, guid: 31e048e04ef5d7044801f68600e8b972,
