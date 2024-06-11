@@ -44,7 +44,7 @@ namespace MFlight
         private Vector3 frozenDirection = Vector3.forward;
         private bool isMouseAimFrozen = false;
 
-        private bool FPV = false;
+        public bool FPV = false;
 
         /// <summary>
         /// Get a point along the aircraft's boresight projected out to aimDistance meters.
@@ -136,11 +136,6 @@ namespace MFlight
             {
                 cam.position += cam.forward * 1.5f;
                 cam.position += cam.up * 0.6f;
-            }
-
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                FPV = !FPV;
             }
         }
 
