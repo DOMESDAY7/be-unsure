@@ -50,8 +50,6 @@ public class FireCounter : MonoBehaviour
         string result = $"Feu éteint {percentage:F2}% ({extinguishedFireCount}/{totalFireCount})";
 
 
-        Debug.Log(result);
-
         if (fireCountText != null)
         {
             fireCountText.text = result;

@@ -38,7 +38,7 @@ namespace MFlight.Demo
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
         public float Roll { set { roll = Mathf.Clamp(value, -1f, 1f); } get { return roll; } }
 
-        private Rigidbody rigid;
+        public Rigidbody rigid;
 
         private bool rollOverride = false;
         private bool pitchOverride = false;
@@ -142,6 +142,9 @@ namespace MFlight.Demo
 
         private void OnCollisionEnter(Collision collision)
         {
+            if (collision.gameObject.CompareTag("Water"))
+                return;
+
             Debug.Log(rigid.velocity.magnitude);
             if (rigid.velocity.magnitude > 10f)
             {
