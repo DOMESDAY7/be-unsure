@@ -4,6 +4,7 @@
 //
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MFlight.Demo
 {
@@ -149,6 +150,7 @@ namespace MFlight.Demo
             if (rigid.velocity.magnitude > 10f)
             {
                 Destroy(this.gameObject);
+                SceneManager.LoadScene("GameOver");
             }
         }
     }
