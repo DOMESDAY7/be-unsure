@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class FireCounter : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI fireCountText;
-    [SerializeField] private float updateInterval = 1.0f; // Update interval in seconds
+    [SerializeField] private float updateInterval = 0.1f; // Update interval in seconds
 
     private float timer;
 
@@ -49,8 +50,10 @@ public class FireCounter : MonoBehaviour
 
         string result = $"Feu éteint {percentage:F2}% ({extinguishedFireCount}/{totalFireCount})";
 
-
-        Debug.Log(result);
+        if(percentage == 1)
+        {
+            SceneManager.LoadScene("Win");
+        }
 
         if (fireCountText != null)
         {
